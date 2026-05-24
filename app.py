@@ -15,7 +15,6 @@ def get_db():
         charset='utf8mb4',
         auth_plugin='mysql_native_password'
     )
-    )
 
 # ── Home / Dashboard ──────────────────────────────────────────────────────────
 @app.route('/')
