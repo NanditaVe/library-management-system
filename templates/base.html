@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Library Management System{% endblock %} — School Library</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f1117;
+      --surface:   #1a1d27;
+      --surface2:  #22263a;
+      --border:    rgba(255,255,255,0.07);
+      --border-md: rgba(255,255,255,0.13);
+      --text:      #e8e9f0;
+      --muted:     #7b7e96;
+      --accent:    #7c6af7;
+      --radius:    10px;
+      --sidebar:   220px;
+      --purple-bg: #26214a; --purple-tx: #b0a8ff;
+      --green-bg:  #162412; --green-tx:  #7ecb6a;
+      --amber-bg:  #2a1f06; --amber-tx:  #f5c06a;
+      --red-bg:    #2a1010; --red-tx:    #f08080;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar); height: 100vh;
+      background: var(--surface);
+      border-right: 0.5px solid var(--border);
+      display: flex; flex-direction: column;
+      padding: 1.5rem 1rem;
+      z-index: 50;
+    }
+    .sidebar-brand {
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 0.5rem 1.25rem;
+      border-bottom: 0.5px solid var(--border);
+      margin-bottom: 0.75rem;
+    }
+    .brand-icon {
+      width: 36px; height: 36px; border-radius: 9px;
+      background: var(--accent); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .brand-name { font-size: 15px; font-weight: 500; line-height: 1.2; }
+    .brand-sub  { font-size: 11px; color: var(--muted); }
+
+    .nav-link {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 10px; border-radius: 8px;
+      color: var(--muted); font-size: 14px; text-decoration: none;
+      transition: background 0.12s, color 0.12s;
+      margin-bottom: 2px;
+    }
+    .nav-link i { font-size: 18px; }
+    .nav-link:hover { background: var(--surface2); color: var(--text); }
+    .nav-link.active { background: var(--surface2); color: var(--text); font-weight: 500; }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 1rem 0.5rem 0;
+      border-top: 0.5px solid var(--border);
+      font-size: 12px; color: var(--muted);
+    }
+    .sidebar-footer strong { display: block; color: var(--text); font-size: 13px; font-weight: 500; }
+
+    /* ── Main ── */
+    .main { margin-left: var(--sidebar); padding: 2rem; min-height: 100vh; }
+
+    .page-header { margin-bottom: 1.75rem; }
+    .page-title  { font-size: 22px; font-weight: 500; }
+    .page-sub    { font-size: 14px; color: var(--muted); margin-top: 3px; }
+
+    /* ── Cards / surfaces ── */
+    .card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 12px 16px;
+      border-bottom: 0.5px solid var(--border);
+      font-size: 13px; font-weight: 500;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+    .stat-card {
+      background: var(--surface2); border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+    }
+    .stat-label { font-size: 12px; color: var(--muted); margin-bottom: 5px; display: flex; align-items: center; gap: 5px; }
+    .stat-value { font-size: 26px; font-weight: 500; line-height: 1; }
+    .stat-note  { font-size: 11px; color: var(--muted); margin-top: 5px; }
+
+    /* ── Table ── */
+    .table-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      text-align: left; padding: 8px 12px;
+      font-size: 11px; font-weight: 500; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      border-bottom: 0.5px solid var(--border);
+      white-space: nowrap;
+    }
+    td { padding: 9px 12px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--surface2); }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block; font-size: 11px; font-weight: 500;
+      padding: 2px 9px; border-radius: 999px;
+    }
+    .badge-pending  { background: var(--amber-bg); color: var(--amber-tx); }
+    .badge-returned { background: var(--green-bg);  color: var(--green-tx); }
+    .badge-none     { background: var(--surface2);  color: var(--muted); }
+    .badge-genre    { background: var(--purple-bg); color: var(--purple-tx); }
+    .badge-student  { background: #E6F1FB; color: #185FA5; }
+    .badge-teacher  { background: #FBEAF0; color: #993556; }
+
+    /* ── Forms / buttons ── */
+    .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap; }
+    .search-wrap { position: relative; flex: 1; max-width: 360px; }
+    .search-wrap i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 16px; pointer-events: none; }
+    .search-input {
+      width: 100%; padding: 7px 10px 7px 34px;
+      border: 0.5px solid var(--border-md);
+      border-radius: 8px; background: var(--surface);
+      font-size: 14px; color: var(--text);
+      font-family: inherit;
+    }
+    .search-input:focus { outline: none; border-color: var(--text); }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: 8px; font-size: 13px;
+      font-family: inherit; cursor: pointer; font-weight: 500;
+      border: 0.5px solid var(--border-md);
+      background: transparent; color: var(--text);
+      text-decoration: none; transition: background 0.12s;
+    }
+    .btn:hover { background: var(--surface2); }
+    .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn-primary:hover { background: #6a59e0; }
+    .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+    /* ── Tabs ── */
+    .tab-bar { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 1rem; }
+    .tab {
+      padding: 5px 13px; border-radius: 7px; font-size: 13px;
+      cursor: pointer; border: 0.5px solid transparent;
+      color: var(--muted); background: transparent; font-family: inherit;
+      transition: background 0.12s;
+    }
+    .tab:hover { background: var(--surface2); color: var(--text); }
+    .tab.active { background: var(--surface2); color: var(--text); font-weight: 500; border-color: var(--border); }
+
+    /* ── Avatar ── */
+    .avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--purple-bg); color: var(--purple-tx);
+      font-size: 10px; font-weight: 500;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-right: 8px;
+    }
+    .name-cell { display: flex; align-items: center; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.3); z-index: 100;
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 0.5px solid var(--border);
+      padding: 1.5rem; width: 440px; max-width: 95vw;
+    }
+    .modal h3 { font-size: 17px; font-weight: 500; margin-bottom: 1.1rem; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .form-group input, .form-group select {
+      width: 100%; padding: 7px 10px;
+      border: 0.5px solid var(--border-md); border-radius: 7px;
+      background: var(--surface); font-size: 14px; color: var(--text);
+      font-family: inherit;
+    }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--text); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1.25rem; }
+
+    /* ── Flash messages ── */
+    .flashes { margin-bottom: 1rem; }
+    .flash {
+      padding: 10px 14px; border-radius: 8px; font-size: 13px;
+      margin-bottom: 6px; display: flex; align-items: center; gap: 8px;
+    }
+    .flash-success { background: var(--green-bg); color: var(--green-tx); }
+    .flash-danger  { background: var(--red-bg);   color: var(--red-tx); }
+
+    /* ── Mono ── */
+    .mono { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+
+    /* ── Empty state ── */
+    .empty { text-align: center; padding: 3rem; color: var(--muted); font-size: 14px; }
+
+    /* ── Two-col layout ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    @media (max-width: 900px) {
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+      .two-col   { grid-template-columns: 1fr; }
+    }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon"><i class="fa-solid fa-book-open" aria-hidden="true"></i></div>
+    <div>
+      <div class="brand-name">Library Management</div>
+      <div class="brand-sub">School Library System</div>
+    </div>
+  </div>
+
+  <a href="{{ url_for('home') }}"          class="nav-link {% if request.endpoint=='home'          %}active{% endif %}"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+  <a href="{{ url_for('view_books') }}"    class="nav-link {% if request.endpoint=='view_books'    %}active{% endif %}"><i class="ti ti-books"></i> Book Records</a>
+  <a href="{{ url_for('view_students') }}" class="nav-link {% if request.endpoint=='view_students' %}active{% endif %}"><i class="ti ti-school"></i> Student Records</a>
+  <a href="{{ url_for('view_teachers') }}" class="nav-link {% if request.endpoint=='view_teachers' %}active{% endif %}"><i class="ti ti-chalkboard"></i> Teacher Records</a>
+
+  <div class="sidebar-footer">
+    <strong>Library Admin</strong>
+    School Management Portal
+  </div>
+</nav>
+
+<main class="main">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flashes">
+        {% for cat, msg in messages %}
+          <div class="flash flash-{{ cat }}">
+            <i class="ti ti-{{ 'circle-check' if cat=='success' else 'alert-circle' }}"></i>
+            {{ msg }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<!-- shared modal close logic -->
+<script>
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

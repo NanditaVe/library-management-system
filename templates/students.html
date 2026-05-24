@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Student Records{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">Student Records</div>
+  <div class="page-sub">View, add, and update student issue/return status</div>
+</div>
+
+<form method="get" action="{{ url_for('view_students') }}" style="margin-bottom:0;">
+  <div class="toolbar">
+    <div class="search-wrap">
+      <i class="ti ti-search"></i>
+      <input class="search-input" type="text" name="q" value="{{ q }}" placeholder="Search by name, class or book…">
+    </div>
+    <button type="submit" class="btn">Search</button>
+    {% if q %}<a href="{{ url_for('view_students') }}" class="btn">Clear</a>{% endif %}
+    <button type="button" class="btn btn-primary" onclick="openModal('modal-add-student')">
+      <i class="ti ti-plus"></i> Add Student
+    </button>
+  </div>
+</form>
+
+<div class="card" style="margin-top:1rem">
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Admno</th><th>Name</th><th>Class</th><th>Roll</th>
+          <th>Book Issued</th><th>Issue Date</th><th>Status</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td class="mono">{{ s.Admno }}</td>
+          <td>
+            <div class="name-cell">
+              <div class="avatar">{{ s.Student_Name[:2].upper() }}</div>
+              {{ s.Student_Name }}
+            </div>
+          </td>
+          <td>{{ s.Class }}-{{ s.Section }}</td>
+          <td>{{ s.Roll_No }}</td>
+          <td>{{ s.Book_Issued or '—' }}</td>
+          <td class="mono">{{ s.Issue_Date or '—' }}</td>
+          <td>
+            {% if s.Return_Status == 'Pending' %}
+              <span class="badge badge-pending">Pending</span>
+            {% elif s.Return_Status == 'Returned' %}
+              <span class="badge badge-returned">Returned</span>
+            {% else %}
+              <span class="badge badge-none">—</span>
+            {% endif %}
+          </td>
+          <td>
+            <button class="btn btn-sm"
+              onclick="openStudentEdit(
+                {{ s.Admno }},
+                '{{ s.Student_Name }}',
+                '{{ s.Book_Issued or '' }}',
+                '{{ s.Issue_Date or '' }}',
+                '{{ s.Return_Status or '' }}'
+              )">
+              <i class="ti ti-edit"></i> Edit
+            </button>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="empty">No students found</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add Student Modal -->
+<div class="modal-overlay" id="modal-add-student">
+  <div class="modal">
+    <h3>Add Student</h3>
+    <form method="post" action="{{ url_for('add_student') }}">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" name="name" placeholder="e.g. Rahul Sharma" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Class</label>
+          <input type="text" name="cls" placeholder="e.g. IX" required>
+        </div>
+        <div class="form-group">
+          <label>Section</label>
+          <input type="text" name="section" placeholder="A or B" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Roll Number</label>
+        <input type="number" name="roll" placeholder="e.g. 14" required>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" onclick="closeModal('modal-add-student')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Add Student</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Student Modal -->
+<div class="modal-overlay" id="modal-edit-student">
+  <div class="modal">
+    <h3>Update Student Record</h3>
+    <p id="edit-student-info" style="font-size:13px; color:var(--muted); margin-bottom:1rem;"></p>
+    <form method="post" id="edit-student-form">
+      <div class="form-group">
+        <label>Book Issued</label>
+        <input type="text" name="book" id="es-book" placeholder="Book name or leave blank">
+      </div>
+      <div class="form-group">
+        <label>Issue Date</label>
+        <input type="date" name="date" id="es-date">
+      </div>
+      <div class="form-group">
+        <label>Return Status</label>
+        <select name="status" id="es-status">
+          <option value="">— none —</option>
+          <option value="Pending">Pending</option>
+          <option value="Returned">Returned</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" onclick="closeModal('modal-edit-student')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openStudentEdit(admno, name, book, date, status) {
+  document.getElementById('edit-student-info').textContent = name + ' — Admno ' + admno;
+  document.getElementById('edit-student-form').action = '/students/update/' + admno;
+  document.getElementById('es-book').value   = book;
+  document.getElementById('es-date').value   = date;
+  document.getElementById('es-status').value = status;
+  openModal('modal-edit-student');
+}
+</script>
+{% endblock %}

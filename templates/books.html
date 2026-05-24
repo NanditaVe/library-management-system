@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Book Records{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">Book Records</div>
+  <div class="page-sub">Read-only view of the library catalogue — {{ books|length }} books shown</div>
+</div>
+
+<!-- Search bar -->
+<form method="get" action="{{ url_for('view_books') }}" style="margin-bottom:0.75rem;">
+  <div class="toolbar">
+    <div class="search-wrap">
+      <i class="ti ti-search"></i>
+      <input class="search-input" type="text" name="q" value="{{ q }}" placeholder="Search by title, author or genre…">
+    </div>
+    <input type="hidden" name="genre" value="{{ active_genre }}">
+    <button type="submit" class="btn">Search</button>
+    {% if q or active_genre %}
+    <a href="{{ url_for('view_books') }}" class="btn">Clear</a>
+    {% endif %}
+  </div>
+</form>
+
+<!-- Genre tabs -->
+<div class="tab-bar">
+  <a href="{{ url_for('view_books', q=q) }}"
+     class="tab {% if not active_genre %}active{% endif %}">All</a>
+  {% for g in genres %}
+  <a href="{{ url_for('view_books', q=q, genre=g) }}"
+     class="tab {% if active_genre == g %}active{% endif %}">{{ g }}</a>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>ISBN</th>
+          <th>Title</th>
+          <th>Author</th>
+          <th>Publication</th>
+          <th>Genre</th>
+          <th>Qty</th>
+          <th>Price</th>
+          <th>Purchased</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in books %}
+        <tr>
+          <td class="mono">{{ b.ISBN }}</td>
+          <td style="font-weight:500; white-space:nowrap">{{ b.Name }}</td>
+          <td>{{ b.Author }}</td>
+          <td style="color:var(--muted)">{{ b.Publication }}</td>
+          <td><span class="badge badge-genre">{{ b.Genre }}</span></td>
+          <td>{{ b.Quantity }}</td>
+          <td>₹{{ b.Price }}</td>
+          <td class="mono">{{ b.Date_of_purchase }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="empty">No books found</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

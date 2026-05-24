@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">Dashboard</div>
+  <div class="page-sub">Overview of library records and activity</div>
+</div>
+
+<!-- Stats -->
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-label"><i class="ti ti-books" aria-hidden="true"></i> Total Books</div>
+    <div class="stat-value">{{ total_books }}</div>
+    <div class="stat-note">titles in catalogue</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label"><i class="ti ti-school" aria-hidden="true"></i> Students</div>
+    <div class="stat-value">{{ total_students }}</div>
+    <div class="stat-note">enrolled</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label"><i class="ti ti-chalkboard" aria-hidden="true"></i> Teachers</div>
+    <div class="stat-value">{{ total_teachers }}</div>
+    <div class="stat-note">registered</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label"><i class="ti ti-clock" aria-hidden="true"></i> Pending Returns</div>
+    <div class="stat-value" style="color:#854F0B">{{ total_pending }}</div>
+    <div class="stat-note">awaiting return</div>
+  </div>
+</div>
+
+<!-- Two-col -->
+<div class="two-col">
+  <!-- Pending issues -->
+  <div class="card">
+    <div class="card-header">
+      Pending Issues
+      <span style="font-size:12px; font-weight:400; color:var(--muted)">{{ pending_list|length }} records</span>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Book</th><th>Issue Date</th><th>Type</th></tr>
+        </thead>
+        <tbody>
+          {% for r in pending_list %}
+          <tr>
+            <td>{{ r.name }}</td>
+            <td>{{ r.book or '—' }}</td>
+            <td class="mono">{{ r.date or '—' }}</td>
+            <td>
+              {% if r.role == 'Student' %}
+                <span class="badge badge-student">Student</span>
+              {% else %}
+                <span class="badge badge-teacher">Teacher</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="empty">No pending returns</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Genre breakdown -->
+  <div class="card">
+    <div class="card-header">Books by Genre</div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Genre</th><th>Count</th></tr></thead>
+        <tbody>
+          {% for g in genres %}
+          <tr>
+            <td><span class="badge badge-genre">{{ g.Genre }}</span></td>
+            <td style="font-weight:500">{{ g.cnt }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

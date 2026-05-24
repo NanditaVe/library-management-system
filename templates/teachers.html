@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Teacher Records{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-title">Teacher Records</div>
+  <div class="page-sub">View, add, and update teacher issue/return status</div>
+</div>
+
+<form method="get" action="{{ url_for('view_teachers') }}" style="margin-bottom:0;">
+  <div class="toolbar">
+    <div class="search-wrap">
+      <i class="ti ti-search"></i>
+      <input class="search-input" type="text" name="q" value="{{ q }}" placeholder="Search by name or book…">
+    </div>
+    <button type="submit" class="btn">Search</button>
+    {% if q %}<a href="{{ url_for('view_teachers') }}" class="btn">Clear</a>{% endif %}
+    <button type="button" class="btn btn-primary" onclick="openModal('modal-add-teacher')">
+      <i class="ti ti-plus"></i> Add Teacher
+    </button>
+  </div>
+</form>
+
+<div class="card" style="margin-top:1rem">
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>Name</th><th>Book Issued</th>
+          <th>Issue Date</th><th>Status</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in teachers %}
+        <tr>
+          <td class="mono">{{ t.Id_No }}</td>
+          <td>
+            <div class="name-cell">
+              <div class="avatar" style="background:#FBEAF0; color:#993556">
+                {{ t.Teacher_Name.replace('Mr.','').replace('Mrs.','').strip()[:2].upper() }}
+              </div>
+              {{ t.Teacher_Name }}
+            </div>
+          </td>
+          <td>{{ t.Book_Issued or '—' }}</td>
+          <td class="mono">{{ t.Issue_Date or '—' }}</td>
+          <td>
+            {% if t.Return_Status == 'Pending' %}
+              <span class="badge badge-pending">Pending</span>
+            {% elif t.Return_Status == 'Returned' %}
+              <span class="badge badge-returned">Returned</span>
+            {% else %}
+              <span class="badge badge-none">—</span>
+            {% endif %}
+          </td>
+          <td>
+            <button class="btn btn-sm"
+              onclick="openTeacherEdit(
+                {{ t.Id_No }},
+                '{{ t.Teacher_Name }}',
+                '{{ t.Book_Issued or '' }}',
+                '{{ t.Issue_Date or '' }}',
+                '{{ t.Return_Status or '' }}'
+              )">
+              <i class="ti ti-edit"></i> Edit
+            </button>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="empty">No teachers found</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add Teacher Modal -->
+<div class="modal-overlay" id="modal-add-teacher">
+  <div class="modal">
+    <h3>Add Teacher</h3>
+    <form method="post" action="{{ url_for('add_teacher') }}">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" name="name" placeholder="e.g. Mr. Vikram Joshi" required>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" onclick="closeModal('modal-add-teacher')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Add Teacher</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Teacher Modal -->
+<div class="modal-overlay" id="modal-edit-teacher">
+  <div class="modal">
+    <h3>Update Teacher Record</h3>
+    <p id="edit-teacher-info" style="font-size:13px; color:var(--muted); margin-bottom:1rem;"></p>
+    <form method="post" id="edit-teacher-form">
+      <div class="form-group">
+        <label>Book Issued</label>
+        <input type="text" name="book" id="et-book" placeholder="Book name or leave blank">
+      </div>
+      <div class="form-group">
+        <label>Issue Date</label>
+        <input type="date" name="date" id="et-date">
+      </div>
+      <div class="form-group">
+        <label>Return Status</label>
+        <select name="status" id="et-status">
+          <option value="">— none —</option>
+          <option value="Pending">Pending</option>
+          <option value="Returned">Returned</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" onclick="closeModal('modal-edit-teacher')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openTeacherEdit(id, name, book, date, status) {
+  document.getElementById('edit-teacher-info').textContent = name + ' — ID ' + id;
+  document.getElementById('edit-teacher-form').action = '/teachers/update/' + id;
+  document.getElementById('et-book').value   = book;
+  document.getElementById('et-date').value   = date;
+  document.getElementById('et-status').value = status;
+  openModal('modal-edit-teacher');
+}
+</script>
+{% endblock %}
